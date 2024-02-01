@@ -1,0 +1,190 @@
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Command Center with Multiple Browsers</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/5.1.3/css/bootstrap.min.css">
+    <style>
+        body { font-family: Arial, sans-serif; }
+        #commandCenter { margin-bottom: 20px; }
+        .iframe-container { 
+            margin-bottom: 10px; 
+            resize: both; 
+            overflow: auto; 
+            width: 800px; 
+            height: 600px;  
+            border: 1px solid #000;
+        }
+        iframe { 
+            width: 100%; 
+            height: 100%; 
+            resize: both;
+        }
+        .loading-indicator {
+            display: none;
+        }
+        .error-message {
+            color: red;
+        }
+        .progress-bar {
+            height: 20px;
+            background-color: #f5f5f5;
+            border-radius: 5px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .progress-bar .progress {
+            height: 100%;
+            position: absolute;
+            background-color: #0d6efd;
+            transition: width 0.3s;
+        }
+
+        .progress-bar .progress-text {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #fff;
+            font-weight: bold;
+            line-height: 20px;
+            z-index: 1;
+        }
+        
+        .search-bar {
+            background-color: #f5f5f5;
+            border-radius: 5px;
+            padding: 10px;
+        }
+        
+        .search-bar input[type="text"] {
+            width: 100%;
+            padding: 5px;
+            border: none;
+            border-radius: 5px;
+            outline: none;
+        }
+        
+        .search-bar button {
+            background-color: #0d6efd;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            padding: 5px 10px;
+            margin-left: 10px;
+            cursor: pointer;
+        }
+        
+        .search-bar button:hover {
+            background-color: #0b5edc;
+        }
+    </style>
+</head>
+<body>
+
+<div id="commandCenter">
+    <h2>Command Center</h2>
+    <button onclick="gatherData()">Gather Data from Browsers</button>
+</div>
+
+<div class="iframe-container">
+    <div class="search-bar">
+        <input type="text" placeholder="Enter URL and press Enter" onkeyup="loadUrl(this, 'browser1')">
+        <button onclick="loadUrl(document.getElementById('input1'), 'browser1')">Go</button>
+    </div>
+    <div class="progress-bar">
+        <div class="progress" id="progress1"></div>
+        <div class="progress-text" id="progressText1"></div>
+    </div>
+    <iframe id="browser1" name="browser1"></iframe>
+</div>
+
+<div class="iframe-container">
+    <div class="search-bar">
+        <input type="text" placeholder="Enter URL and press Enter" onkeyup="loadUrl(this, 'browser2')">
+        <button onclick="loadUrl(document.getElementById('input2'), 'browser2')">Go</button>
+    </div>
+    <div class="progress-bar">
+        <div class="progress" id="progress2"></div>
+        <div class="progress-text" id="progressText2"></div>
+    </div>
+    <iframe id="browser2" name="browser2"></iframe>
+</div>
+
+<div class="iframe-container">
+    <div class="search-bar">
+        <input type="text" placeholder="Enter URL and press Enter" onkeyup="loadUrl(this, 'browser3')">
+        <button onclick="loadUrl(document.getElementById('input3'), 'browser3')">Go</button>
+    </div>
+    <div class="progress-bar">
+        <div class="progress" id="progress3"></div>
+        <div class="progress-text" id="progressText3"></div>
+    </div>
+    <iframe id="browser3" name="browser3"></iframe>
+</div>
+
+<script>
+    function loadUrl(inputElement, iframeId) {
+        const url = inputElement.value;
+        if (url && (url.startsWith('http://') || url.startsWith('https://'))) {
+            const iframe = document.getElementById(iframeId);
+            const progress = document.getElementById(`progress${iframeId.charAt(7)}`);
+            const progressText = document.getElementById(`progressText${iframeId.charAt(7)}`);
+            progress.style.width = '0%';
+            progressText.innerText = '0%';
+            progress.style.backgroundColor = getRandomColor();
+            iframe.onloadstart = function() {
+                progress.style.width = '10%';
+                progressText.innerText = '10%';
+            };
+            iframe.onload = function() {
+                progress.style.width = '100%';
+                progressText.innerText = '100%';
+                setTimeout(() => {
+                    progress.style.display = 'none';
+                }, 500);
+            };
+            iframe.src = url;
+        }
+    }
+
+    function gatherData() {
+        const iframes = document.querySelectorAll('iframe');
+        const data = Array.from(iframes).map(iframe => {
+            try {
+                const doc = iframe.contentDocument || iframe.contentWindow.document;
+                // Analyzing iframe content and returning the required data
+                return {
+                    src: iframe.src,
+                    title: doc.title,
+                    data: parseIframeContent(doc) // parsing data
+                };
+            } catch (e) {
+                console.error(`Error accessing iframe content: ${iframe.src}`);
+                return null; // or handle the error as needed
+            }
+        }).filter(Boolean);
+        console.log('Collected information from iframes:', data);
+        // Further process the data as needed
+    }
+
+    function parseIframeContent(doc) {
+        // Here, add the code for parsing data, for example:
+        // return doc.querySelectorAll('a').length; // the number of links
+        // This is just an example; implement logic according to your requirements
+    }
+
+    function getRandomColor() {
+        const letters = '0123456789ABCDEF';
+        let color = '#';
+        for (let i = 0; i < 6; i++) {
+            color += letters[Math.floor(Math.random() * 16)];
+        }
+        return color;
+    }
+</script>
+
+</body>
+</html>
